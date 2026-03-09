@@ -37,9 +37,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# Setup path to allow importing llm_client from week_04
-sys.path.insert(0, str(Path(__file__).parent.parent / "week_04"))
-
 try:
     import pandas as pd
 except ImportError:
@@ -47,12 +44,35 @@ except ImportError:
     print("Error: pandas is required. Install with: pip install pandas")
     sys.exit(1)
 
+# Try to import llm_client from week_04, with fallback options
+LLMClient = None
+LLMRequest = None
+LLMResponse = None
+
+# Option 1: Try importing from installed package (if llm_client is in the same directory)
 try:
     from llm_client import LLMClient, LLMRequest, LLMResponse
 except ImportError:
-    LLMClient = None
-    LLMRequest = None
-    LLMResponse = None
+    pass
+
+# Option 2: Try importing from week_04 relative path
+if LLMClient is None:
+    week_04_path = Path(__file__).parent.parent / "week_04"
+    if week_04_path.exists():
+        sys.path.insert(0, str(week_04_path))
+        try:
+            from llm_client import LLMClient, LLMRequest, LLMResponse
+        except ImportError:
+            pass
+
+# Option 3: Check if llm_client.py exists in current directory
+if LLMClient is None:
+    local_llm_client = Path(__file__).parent / "llm_client.py"
+    if local_llm_client.exists():
+        try:
+            from llm_client import LLMClient, LLMRequest, LLMResponse
+        except ImportError:
+            pass
 
 
 logger = logging.getLogger(__name__)
